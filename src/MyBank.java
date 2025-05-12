@@ -11,6 +11,12 @@ public class MyBank
     private static final String username = "HR";
     private static final String password = "hr";
 
+    private static String name;
+    private static String aadhar_no;
+    private static String passkey;
+
+    final static Scanner sc = new Scanner(System.in);
+
     public static void main(String args[])
     {
         try
@@ -24,10 +30,9 @@ public class MyBank
         try
         {
             final Connection con = DriverManager.getConnection(jdbcURL, username, password);
-            final Scanner sc = new Scanner(System.in);
 
             Account account = new Account(con,sc);
-            account.extractAccountNumbers();
+            account.extractAllAccountNumbers();
             Aadhar aadhar = new Aadhar(con,account,sc);
 
             while(true)
@@ -45,32 +50,59 @@ public class MyBank
                 {
                     case 1:
                     {
-                        aadhar.register();
+                        getDetails();
+                        aadhar.register(aadhar_no,name,passkey);
+                        break;
                     }
                     case 2:
                     {
-                        if(aadhar.login())
+                        getDetails();
+                        if(aadhar.login(aadhar_no,passkey))
                         {
-                            System.out.println("You have successfully logged in to your account");
+                            System.out.println("You have successfully logged in");
                             System.out.println("choose below options");
                             System.out.println("------------------------------------------------------");
-                            System.out.println("1. Deposite");
-                            System.out.println("2. Send");
-                            System.out.println("3. Exit");
-                            System.out.print("\nEnter your choice: ");
-                            int choice2 = sc.nextInt();
                             
-                            Transaction tn = new Transaction(con, sc);
+                            System.out.println("1. Create a new Bank Account");
+                            System.out.println("2. Open an Existing Bank Account");
+                            int choice2 = sc.nextInt();
                             switch(choice2)
                             {
                                 case 1:
-                                {}
+                                {
+                                    System.out.println("Innitial Deposition:->");
+                                    double balance=sc.nextDouble();
+                                    account.createAccount(aadhar_no,name,balance);
+                                    break;
+                                }
                                 case 2:
-                                {}
-                                case 3:
-                                {}
+                                {
+                                    if(account.getAccount(aadhar_no))
+                                    {
+                                        System.out.println("Login to Your Account");
+
+                                        System.out.println("1. Deposite");
+                                        System.out.println("2. Send");
+                                        System.out.println("3. Exit");
+                                        System.out.print("\nEnter your choice: ");
+                                        int choice3 = sc.nextInt();
+                                        
+                                        Transaction transaction = new Transaction(con,sc);
+                                        switch(choice3)
+                                        {
+                                            case 1:
+                                            {}
+                                            case 2:
+                                            {}
+                                            case 3:
+                                            {}
+                                        }
+                                    }
+                                }
                             }
                         }
+                        else System.out.println("User not registered using Aadhar");
+                        break;
                     }
                     case 3:
                     {
@@ -83,5 +115,15 @@ public class MyBank
         } catch(SQLException e){
             System.out.println("SQL exception occured !!!");
         }
+    }
+
+    static void getDetails()
+    {
+        System.out.println("Enter your Aadhar Number:-> ");
+        aadhar_no = sc.next();
+        System.out.println("Enter the name:- ");
+        name = sc.nextLine();
+        System.out.println("Enter the PassKey:-> ");
+        passkey = sc.next();
     }
 }

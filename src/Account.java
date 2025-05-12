@@ -18,7 +18,7 @@ class Account
         this.sc = sc;
     }
 
-    void createAccount(String aadhar_no, String name)
+    void createAccount(String aadhar_no, String name, double balance)
     {
         String acc_no = generateAccountNumber();
         int pin = generatePin();
@@ -27,6 +27,12 @@ class Account
         try
         {
             PreparedStatement pst = con.prepareStatement(acc_Query);
+            pst.setString(1,acc_no);
+            pst.setString(2,name);
+            pst.setString(3,aadhar_no);
+            pst.setDouble(4,balance);
+            pst.setInt(5,pin);
+
             int eff_row = pst.executeUpdate();
             if(eff_row>0)
             {
@@ -67,7 +73,8 @@ class Account
         Random rand = new Random();
         return rand.nextInt(9999)+1;
     }
-    void extractAccountNumbers()
+
+    void extractAllAccountNumbers()
     {
         String query = "SELECT acc_no FROM Account";
         try
@@ -80,5 +87,34 @@ class Account
             System.out.println("exception during extraction of account number into set");
             e.getStackTrace();
         }
+    }
+
+    boolean getAccount(String aadhar_no)
+    {
+        int account_counter=1;
+        String query = "SELECT acc_no,balance FROM Account WHERE aadhar_no = ?";
+
+        try
+        {
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setString(1,aadhar_no);
+
+            ResultSet result = pst.executeQuery();
+            while(result.next())
+            {
+                String acc_no = result.getString("acc_no");
+                int balance = result.getInt("balance");
+                System.out.println("Account "+account_counter+" :->"+acc_no+"(Balance $)"+balance);
+                account_counter++;
+            }
+            System.out.println("-------------------------------------------------------------");
+            if(account_counter>1) return true;
+            return false;
+
+        } catch(SQLException e){
+            System.out.println("Exception in getting account number associated with Aadhar Number");
+            e.printStackTrace();
+        }
+        return false;
     }
 }

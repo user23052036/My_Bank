@@ -29,7 +29,7 @@ create table Aadhar --Parent Table
 (
     aadhar_no VARCHAR(12) PRIMARY KEY CHECK (REGEXP_LIKE(aadhar_no, '^[2-9][0-9]{11}$')),
     name varchar(20),
-    OTP int
+    passkey VARCHAR(10)
 );
 
 select * from Aadhar;
@@ -41,7 +41,7 @@ create table Account --Child Table
 (   acc_no VARCHAR(20) PRIMARY KEY,
     name VARCHAR2(25) not null,
     aadhar_no VARCHAR(12) not null,  --foreign key of this table references primary key of the Aadhar table
-    balance number default 0,
+    balance number(7,2) default 0.00,
     pin number(3,0) CHECK(pin BETWEEN 100 AND 999),
     FOREIGN KEY (aadhar_no) REFERENCES Aadhar(aadhar_no)
 );
