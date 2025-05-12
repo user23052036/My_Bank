@@ -1,11 +1,13 @@
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Scanner;
 
 class Aadhar
 {
     Connection con;
+    PreparedStatement pst;
     Account account;
     Scanner sc;
 
@@ -16,33 +18,22 @@ class Aadhar
         this.sc = sc;
     }
 
-    void register()
+    void register(String aadhar_no, String name, String passkey)
     {
-        System.out.println("Enter the aadhar_no:-");
-        String aadhar_no = sc.next();
-        System.out.println("Enter the name:- ");
-        String name = sc.nextLine();
-        System.out.println("Enter OPT received:- ");
-        int OTP = sc.nextInt();
-
-        if(available(aadhar_no))
-            System.out.println("User already registered under the Aadhar number");
+        if(available(aadhar_no)) 
+            System.out.println("User already registered under the Aadhar Number");
         else
         {
-            String update_query = "INSERT INTO Aadhar(aadhar_no,name,OTP) VALUES(?,?,?)";
+            String update_query = "INSERT INTO Aadhar(aadhar_no,name,passkey) VALUES(?,?,?)";
             try
             {
-                PreparedStatement pst = con.prepareStatement(update_query);
+                pst = con.prepareStatement(update_query);
                 pst.setString(1,aadhar_no);
                 pst.setString(2,name);
-                pst.setInt(3, OTP);
+                pst.setString(3, passkey);
 
                 int eff_row = pst.executeUpdate();
-                if(eff_row>0) 
-                {
-                    System.out.println("User registered successfully!");
-                    account.createAccount(aadhar_no,name);
-                }
+                if(eff_row>0) System.out.println("User registered successfully!");
                 else System.out.println("registration failed");
                 
             } catch(SQLException e){
@@ -56,7 +47,7 @@ class Aadhar
         String reg_query = "SELECT * from Aadhar where aadhar_no = ?";
         try
         {
-            PreparedStatement pst = con.prepareStatement(reg_query);
+            pst = con.prepareStatement(reg_query);
             pst.setString(1, aadhar_no);
 
             int eff_row = pst.executeUpdate();
@@ -70,8 +61,22 @@ class Aadhar
         return false;
     }
 
-    void login()
+    boolean login(String aadhar_no, String passkey)
     {
+        String query = "SELECT * FROM  Aadhar where aadhar_no = ? AND PassKey = ?";
 
+        try
+        {
+            pst = con.prepareStatement(query);
+            pst.setString(1,aadhar_no);
+            pst.setString(2,passkey);
+
+            ResultSet result = pst.executeQuery();
+            if(result.next()) return true;
+            else return false;
+        } catch(SQLException e){
+            System.out.println("Error during login process");
+        }
+        return false;
     }
 }
