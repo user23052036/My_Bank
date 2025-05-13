@@ -34,6 +34,7 @@ public class MyBank
             Account account = new Account(con,sc);
             account.extractAllAccountNumbers();
             Aadhar aadhar = new Aadhar(con,account,sc);
+            Transaction transaction = new Transaction(con,sc);
 
             while(true)
             {
@@ -50,52 +51,96 @@ public class MyBank
                 {
                     case 1:
                     {
+                        System.out.println("Enter details to Register to Banking System\n");
                         getDetails();
                         aadhar.register(aadhar_no,name,passkey);
                         break;
                     }
                     case 2:
                     {
+                        System.out.println("Enter details to login to Banking System\n");
                         getDetails();
                         if(aadhar.login(aadhar_no,passkey))
                         {
-                            System.out.println("You have successfully logged in");
+                            System.out.println("You have successfully logged in\n");
                             System.out.println("choose below options");
                             System.out.println("------------------------------------------------------");
-                            
-                            System.out.println("1. Create a new Bank Account");
-                            System.out.println("2. Open an Existing Bank Account");
-                            int choice2 = sc.nextInt();
-                            switch(choice2)
-                            {
-                                case 1:
-                                {
-                                    System.out.println("Innitial Deposition:->");
-                                    double balance=sc.nextDouble();
-                                    account.createAccount(aadhar_no,name,balance);
-                                    break;
-                                }
-                                case 2:
-                                {
-                                    if(account.getAccount(aadhar_no))
-                                    {
-                                        System.out.println("Login to Your Account");
 
-                                        System.out.println("1. Deposite");
-                                        System.out.println("2. Send");
-                                        System.out.println("3. Exit");
-                                        System.out.print("\nEnter your choice: ");
-                                        int choice3 = sc.nextInt();
-                                        
-                                        Transaction transaction = new Transaction(con,sc);
-                                        switch(choice3)
+                            while(true)
+                            {
+                            
+                                System.out.println("1. Create a new Bank Account");
+                                System.out.println("2. Open an Existing Bank Account");
+                                System.out.print("\nEnter your choice: ");
+                                int choice2 = sc.nextInt();
+                                switch(choice2)
+                                {
+                                    case 1:
+                                    {
+                                        System.out.println("Innitial Deposition:->");
+                                        double balance=sc.nextDouble();
+                                        account.createAccount(aadhar_no,name,balance);
+                                        break;
+                                    }
+                                    case 2:
+                                    {
+                                        if(!account.getAccount(aadhar_no))
                                         {
-                                            case 1:
-                                            {}
-                                            case 2:
-                                            {}
-                                            case 3:
-                                            {}
+                                            System.out.println("No Bank Account exists under the Aadhar no: "+aadhar_no);
+                                            break;
+                                        }
+
+                                        System.out.println("\nLogin to Your Bank Account\n");
+                                        System.out.print("Enter Account Number: ");
+                                        String acc_no = sc.next();
+                                        System.out.println("Enter the pin: ");
+                                        int pin = sc.nextInt();
+                                        if(!account.login(acc_no,pin))
+                                        {
+                                            System.out.println("Failed to Login to Your Bank Account");
+                                            break;
+                                        }
+
+                                        while(true)
+                                        {
+                                            System.out.println("1. Deposite Money");
+                                            System.out.println("2. Send Money");
+                                            System.out.println("3. Check Balance");
+                                            System.out.println("4. Exit");
+                                            System.out.print("\nEnter your choice: ");
+                                            int choice3 = sc.nextInt();
+                                            
+                                            System.out.print("Enter your Pin: ");
+                                            pin = sc.nextInt();
+                                            if(!account.checkCredential(acc_no,pin))
+                                            {
+                                                System.out.println("Enter the correct pin TRY AGAIN");
+                                                continue;
+                                            }
+                                            switch(choice3)
+                                            {
+                                                case 1:
+                                                {
+                                                    System.out.println("Enter amount to deposite: ");
+                                                    int amount = sc.nextInt();
+                                                    transaction.deposite(amount);
+                                                    break;
+                                                }
+                                                case 2:
+                                                {
+                                                    break;
+                                                }
+                                                case 3:
+                                                {
+                                                    account.getBalance(acc_no,pin);
+                                                    break;
+                                                }
+                                                case 4:
+                                                {
+                                                    System.out.println("THANK YOU FOR USING BANKING SYSTEM!!!");
+                                                    return;
+                                                }
+                                            }
                                         }
                                     }
                                 }

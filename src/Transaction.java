@@ -33,6 +33,8 @@ class AccountNotFoundException extends Exception
 
 class Transaction 
 {
+    PreparedStatement pst;
+    ResultSet result;
     Connection con;
     Scanner sc;
 
@@ -43,8 +45,7 @@ class Transaction
     }
 
     //-------------------------------------------------------------------------------------------------------
-
-
+    
     void validate_receiver(String acc_no) throws AccountNotFoundException
     {
         String query = "SELECT * FROM Account WHERE acc_no = ?";

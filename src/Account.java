@@ -3,6 +3,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -10,12 +11,52 @@ class Account
 {
     Scanner sc;
     Connection con;
+    Statement st;
+    PreparedStatement pst;
+    ResultSet result;
     HashSet<String> set = new HashSet<>();
 
     Account(Connection con, Scanner sc)
     {
         this.con = con;
         this.sc = sc;
+    }
+
+    void getBalance(String acc_no, int pin)
+    {
+        String query = "SELECT balance FROM Account WHERE acc_no = ? AND pin = ?";
+        
+        try
+        {
+            pst = con.prepareStatement(query);
+            pst.setString(1,acc_no);
+            pst.setInt(2,pin);
+            result = pst.executeQuery();
+
+            int balance = result.getInt("balance");
+            System.out.println("Current Balance in account: "+acc_no+" is "+"$"+balance);
+        } catch(SQLException e){
+            System.out.println("Error in getting result");
+            e.printStackTrace();
+        }
+    }
+
+    boolean login(String acc_no, int pin)
+    {
+        String query = "SELECT acc_no FROM Account WHERE acc_no = ? AND pin = ?";
+
+        try
+        {
+            pst = con.prepareStatement(query);
+            result = pst.executeQuery();
+            if(result.next()) return true;
+            return false;
+
+        } catch(SQLException e){
+            System.out.println("error in login into the account table");
+            e.printStackTrace();
+        }
+        return false;
     }
 
     void createAccount(String aadhar_no, String name, double balance)
@@ -26,7 +67,7 @@ class Account
         String acc_Query = "INSERT INTO Account(acc_no,name,aadhar_no,balance,pin) VALUES(?,?,?,?,?)";
         try
         {
-            PreparedStatement pst = con.prepareStatement(acc_Query);
+            pst = con.prepareStatement(acc_Query);
             pst.setString(1,acc_no);
             pst.setString(2,name);
             pst.setString(3,aadhar_no);
@@ -79,9 +120,9 @@ class Account
         String query = "SELECT acc_no FROM Account";
         try
         {
-            PreparedStatement pst = con.prepareStatement(query);
-            ResultSet rs = pst.executeQuery();
-            while(rs.next()) set.add(rs.getString("acc_no"));
+            st = con.createStatement();
+            result = pst.executeQuery(query);
+            while(result.next()) set.add(result.getString("acc_no"));
             
         } catch(SQLException e){
             System.out.println("exception during extraction of account number into set");
@@ -96,10 +137,10 @@ class Account
 
         try
         {
-            PreparedStatement pst = con.prepareStatement(query);
+            pst = con.prepareStatement(query);
             pst.setString(1,aadhar_no);
 
-            ResultSet result = pst.executeQuery();
+            result = pst.executeQuery();
             while(result.next())
             {
                 String acc_no = result.getString("acc_no");
