@@ -112,7 +112,7 @@ public class MyBank
                                             
                                             System.out.print("Enter your Pin: ");
                                             pin = sc.nextInt();
-                                            if(!account.checkCredential(acc_no,pin))
+                                            if(!account.login(acc_no,pin))
                                             {
                                                 System.out.println("Enter the correct pin TRY AGAIN");
                                                 continue;
@@ -123,11 +123,21 @@ public class MyBank
                                                 {
                                                     System.out.println("Enter amount to deposite: ");
                                                     int amount = sc.nextInt();
-                                                    transaction.deposite(amount);
+                                                    account.deposite(acc_no,amount);
+                                                    account.getBalance(acc_no, pin);
                                                     break;
                                                 }
                                                 case 2:
                                                 {
+                                                    try
+                                                    {
+                                                        transaction.transfer(acc_no);
+                                                    } catch(AccountNotFoundException e1){
+                                                        System.out.println(e1);
+                                                    } catch(MinimumBalanceException e2){
+                                                        System.out.println(e2);
+                                                    }
+                                                    account.getBalance(acc_no, pin);
                                                     break;
                                                 }
                                                 case 3:

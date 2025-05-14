@@ -12,20 +12,18 @@ class MinimumBalanceException extends Exception
 {
     MinimumBalanceException(){super();}
 
+    @Override
     public String toString()
-    {
-        return "MINIMUMBALANCE EXCEPTION!";
-    }
+    { return "MINIMUMBALANCE EXCEPTION!";}
 }
 class AccountNotFoundException extends Exception
 {
     AccountNotFoundException(String message)
     {super(message);}
 
+    @Override
     public String toString()
-    {
-        return "INVALID CREDENTIALS"+getMessage();
-    }
+    { return "INVALID CREDENTIALS"+getMessage();}
 }
 //--------------------------------------------------------------------------------------------------
 
@@ -33,7 +31,7 @@ class AccountNotFoundException extends Exception
 
 class Transaction 
 {
-    PreparedStatement pst;
+    PreparedStatement s_pst,r_pst;
     ResultSet result;
     Connection con;
     Scanner sc;
@@ -51,11 +49,11 @@ class Transaction
         String query = "SELECT * FROM Account WHERE acc_no = ?";
         try 
         {
-            PreparedStatement pst = con.prepareStatement(query);
-            pst.setString(1, acc_no);
-            ResultSet rs = pst.executeQuery();
+            r_pst = con.prepareStatement(query);
+            r_pst.setString(1, acc_no);
+            result = r_pst.executeQuery();
 
-            if (!rs.next()) 
+            if (!result.next()) 
             {
                 String excep_mess = String.format("%d Not Found In DATABASE!",acc_no);
                 throw new AccountNotFoundException(excep_mess);
@@ -71,12 +69,12 @@ class Transaction
         String query = "SELECT * FROM Account WHERE acc_no = ? AND UPPER(name) = UPPER(?)";
         try 
         {
-            PreparedStatement pst = con.prepareStatement(query);
-            pst.setString(1, acc_no);
-            pst.setString(2, name);
-            ResultSet rs = pst.executeQuery();
+            r_pst = con.prepareStatement(query);
+            r_pst.setString(1, acc_no);
+            r_pst.setString(2, name);
+            result = r_pst.executeQuery();
 
-            if(!rs.next())
+            if(!result.next())
             {
                 String excep_mess = String.format("%d does not match with '%s'",acc_no,name);
                 throw new AccountNotFoundException(excep_mess);
@@ -87,58 +85,47 @@ class Transaction
         }
     }
 
-    void transfer() throws AccountNotFoundException,MinimumBalanceException
+    void transfer(String acc_no) throws AccountNotFoundException,MinimumBalanceException
     {
         try
         {
-            con.setAutoCommit(false); 
+            con.setAutoCommit(false); // to mantain atomocity property
 
             String debit = "update Account set balance = balance - ? where acc_no = ?";
             String cradit = "update Account set balance = balance + ? where acc_no = ?";
-            PreparedStatement s_pst = con.prepareStatement(debit);
-            PreparedStatement r_pst = con.prepareStatement(cradit);
+            s_pst = con.prepareStatement(debit);
+            r_pst = con.prepareStatement(cradit);
 
-            while(true)
+            
+            System.out.println("--------------:Enter account details of the Receiver:-------------");
+            System.out.print("Enter acc number:-");
+            String r_acc_no = sc.next();
+            sc.nextLine();
+            validate_receiver(r_acc_no);
+
+            System.out.print("Enter Name:-");
+            String r_name = sc.nextLine();
+            validate_receiver(r_acc_no,r_name);
+
+            System.out.println("Enter amount to send: ");
+            double s_amount = sc.nextDouble();
+
+            
+            s_pst.setDouble(1,s_amount);
+            s_pst.setString(2,acc_no);
+            r_pst.setDouble(1,s_amount);
+            r_pst.setString(2, r_acc_no);
+
+            int eff_row1 = s_pst.executeUpdate();
+            int eff_row2 = r_pst.executeUpdate();
+
+            if(eff_row1>0 && eff_row2>0) 
             {
-                System.out.println("--------------:Enter account details of the Receiver:-------------");
-                System.out.print("Enter acc number:-");
-                String r_acc_no = sc.next();
-                sc.nextLine();
-                validate_receiver(r_acc_no);
-
-                System.out.print("Enter Name:-");
-                String r_name = sc.nextLine();
-                validate_receiver(r_acc_no,r_name);
-
-                
-                s_pst.setInt(1, s_amount);
-                s_pst.setInt(2, s_acc_no);
-                r_pst.setInt(1, s_amount);
-                r_pst.setInt(2, r_acc_no);
-
-                try
-                {
-                    s_pst.executeUpdate();
-                    r_pst.executeUpdate();
-                    con.commit();
-
-                    System.out.println(".....[[[[Transaction Successull]]]].....");
-                    System.out.println("money send "+s_amount+" from "+s_name+" to "+r_name);
-                    System.out.println("current balance on "+s_name+" is "+(s_balance-s_amount));
-                    System.out.println("current balance on "+r_name+" is "+(r_balance+s_amount));
-                    
-                } catch(SQLException e){
-
-                    con.rollback();
-                    System.out.println("Transaction has failed!");
-                }
-
-                System.out.print("Want to perform any more transaction(y/Y)?:-");
-                String choice = sc.next();
-                if(choice.toUpperCase().equals("N")) break;
+                con.commit();
+                System.out.println(".....[[[[Transaction Successull]]]].....");
             }
-            sc.close();
-
+            else System.out.println("Transaction failed "+s_amount+" reverted back to source");
+                
         } catch (SQLException e) {
             System.out.println(e.getMessage());;
         }

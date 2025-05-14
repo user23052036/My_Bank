@@ -22,6 +22,26 @@ class Account
         this.sc = sc;
     }
 
+    void deposite(String acc_no, double amount)
+    {
+        String query = "UPDATE ACCOUNT SET balance = balance + ? WHERE acc_no = ?";
+
+        try
+        {
+            pst = con.prepareStatement(query);
+            pst.setDouble(1,amount);
+            pst.setString(2,acc_no);
+            int eff_row = pst.executeUpdate();
+
+            if(eff_row>0) System.out.println("Money Deposited");
+            else System.out.println("Failed to deposite Money");
+
+        } catch(SQLException e){
+            System.out.println("Error in getting result");
+            e.printStackTrace();
+        }
+    }
+
     void getBalance(String acc_no, int pin)
     {
         String query = "SELECT balance FROM Account WHERE acc_no = ? AND pin = ?";
@@ -33,7 +53,7 @@ class Account
             pst.setInt(2,pin);
             result = pst.executeQuery();
 
-            int balance = result.getInt("balance");
+            double balance = result.getDouble("balance");
             System.out.println("Current Balance in account: "+acc_no+" is "+"$"+balance);
         } catch(SQLException e){
             System.out.println("Error in getting result");
