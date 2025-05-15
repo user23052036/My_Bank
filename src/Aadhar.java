@@ -1,21 +1,21 @@
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Scanner;
 
 class Aadhar
 {
     Connection con;
     PreparedStatement pst;
     Account account;
-    Scanner sc;
+    BufferedReader sb;
 
-    Aadhar(Connection con, Account account, Scanner sc)  //constructor
+    Aadhar(Connection con, Account account, BufferedReader sb)  //constructor
     {
         this.con = con;
         this.account = account;
-        this.sc = sc;
+        this.sb = sb;
     }
 
     void register(String aadhar_no, String name, String passkey)

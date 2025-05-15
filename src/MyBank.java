@@ -1,7 +1,9 @@
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.util.Scanner;
 
 
 
@@ -15,7 +17,7 @@ public class MyBank
     private static String aadhar_no;
     private static String passkey;
 
-    final static Scanner sc = new Scanner(System.in);
+    final static BufferedReader sb = new BufferedReader(new InputStreamReader(System.in));
 
     public static void main(String args[])
     {
@@ -31,10 +33,10 @@ public class MyBank
         {
             final Connection con = DriverManager.getConnection(jdbcURL, username, password);
 
-            Account account = new Account(con,sc);
+            Account account = new Account(con,sb);
             account.extractAllAccountNumbers();
-            Aadhar aadhar = new Aadhar(con,account,sc);
-            Transaction transaction = new Transaction(con,sc);
+            Aadhar aadhar = new Aadhar(con,account,sb);
+            Transaction transaction = new Transaction(con,sb);
 
             while(true)
             {
@@ -45,7 +47,7 @@ public class MyBank
                 System.out.println("2. Login");
                 System.out.println("3. Exit");
                 System.out.print("\nEnter your choice: ");
-                int choice1 = sc.nextInt();
+                int choice1 = Integer.parseInt(sb.readLine());
 
                 switch(choice1)
                 {
@@ -68,17 +70,17 @@ public class MyBank
 
                             while(true)
                             {
-                            
+                                double balance = 0.0;
                                 System.out.println("1. Create a new Bank Account");
                                 System.out.println("2. Open an Existing Bank Account");
                                 System.out.print("\nEnter your choice: ");
-                                int choice2 = sc.nextInt();
+                                int choice2 = Integer.parseInt(sb.readLine());
                                 switch(choice2)
                                 {
                                     case 1:
                                     {
                                         System.out.println("Innitial Deposition:->");
-                                        double balance=sc.nextDouble();
+                                        balance=Double.parseDouble(sb.readLine());
                                         account.createAccount(aadhar_no,name,balance);
                                         break;
                                     }
@@ -92,9 +94,10 @@ public class MyBank
 
                                         System.out.println("\nLogin to Your Bank Account\n");
                                         System.out.print("Enter Account Number: ");
-                                        String acc_no = sc.next();
+                                        String acc_no = sb.readLine();
                                         System.out.println("Enter the pin: ");
-                                        int pin = sc.nextInt();
+                                        int pin = Integer.parseInt(sb.readLine());
+
                                         if(!account.login(acc_no,pin))
                                         {
                                             System.out.println("Failed to Login to Your Bank Account");
@@ -108,10 +111,10 @@ public class MyBank
                                             System.out.println("3. Check Balance");
                                             System.out.println("4. Exit");
                                             System.out.print("\nEnter your choice: ");
-                                            int choice3 = sc.nextInt();
+                                            int choice3 = Integer.parseInt(sb.readLine());
                                             
                                             System.out.print("Enter your Pin: ");
-                                            pin = sc.nextInt();
+                                            pin = Integer.parseInt(sb.readLine());
                                             if(!account.login(acc_no,pin))
                                             {
                                                 System.out.println("Enter the correct pin TRY AGAIN");
@@ -122,9 +125,9 @@ public class MyBank
                                                 case 1:
                                                 {
                                                     System.out.println("Enter amount to deposite: ");
-                                                    int amount = sc.nextInt();
+                                                    double amount = Double.parseDouble(sb.readLine());
                                                     account.deposite(acc_no,amount);
-                                                    account.getBalance(acc_no, pin);
+                                                    balance = account.getBalance(acc_no);
                                                     break;
                                                 }
                                                 case 2:
@@ -137,12 +140,12 @@ public class MyBank
                                                     } catch(MinimumBalanceException e2){
                                                         System.out.println(e2);
                                                     }
-                                                    account.getBalance(acc_no, pin);
+                                                    balance = account.getBalance(acc_no);
                                                     break;
                                                 }
                                                 case 3:
                                                 {
-                                                    account.getBalance(acc_no,pin);
+                                                    balance = account.getBalance(acc_no);
                                                     break;
                                                 }
                                                 case 4:
@@ -150,6 +153,8 @@ public class MyBank
                                                     System.out.println("THANK YOU FOR USING BANKING SYSTEM!!!");
                                                     return;
                                                 }
+                                                default:
+                                                    System.out.println("Current Balance in account: "+acc_no+" is "+"$"+balance);
                                             }
                                         }
                                     }
@@ -167,18 +172,20 @@ public class MyBank
                     }
                 }
             }
-        } catch(SQLException e){
+        } catch(SQLException e1){
             System.out.println("SQL exception occured !!!");
+        } catch(IOException e2){
+            e2.printStackTrace();
         }
     }
 
-    static void getDetails()
+    static void getDetails() throws IOException
     {
         System.out.println("Enter your Aadhar Number:-> ");
-        aadhar_no = sc.next();
+        aadhar_no = sb.readLine();
         System.out.println("Enter the name:- ");
-        name = sc.nextLine();
+        name = sb.readLine();
         System.out.println("Enter the PassKey:-> ");
-        passkey = sc.next();
+        passkey = sb.readLine();
     }
 }

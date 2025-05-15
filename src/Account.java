@@ -1,6 +1,6 @@
-import java.util.Scanner;
 import java.util.HashSet;
 import java.util.Random;
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,17 +9,17 @@ import java.sql.ResultSet;
 
 class Account
 {
-    Scanner sc;
+    BufferedReader sb;
     Connection con;
     Statement st;
     PreparedStatement pst;
     ResultSet result;
     HashSet<String> set = new HashSet<>();
 
-    Account(Connection con, Scanner sc)
+    Account(Connection con, BufferedReader sb)
     {
         this.con = con;
-        this.sc = sc;
+        this.sb = sb;
     }
 
     void deposite(String acc_no, double amount)
@@ -42,23 +42,23 @@ class Account
         }
     }
 
-    void getBalance(String acc_no, int pin)
+    double getBalance(String acc_no)
     {
-        String query = "SELECT balance FROM Account WHERE acc_no = ? AND pin = ?";
+        double balance=0;
+        String query = "SELECT balance FROM Account WHERE acc_no = ?";
         
         try
         {
             pst = con.prepareStatement(query);
             pst.setString(1,acc_no);
-            pst.setInt(2,pin);
             result = pst.executeQuery();
-
-            double balance = result.getDouble("balance");
-            System.out.println("Current Balance in account: "+acc_no+" is "+"$"+balance);
+            balance = result.getDouble("balance");
+            
         } catch(SQLException e){
             System.out.println("Error in getting result");
             e.printStackTrace();
         }
+        return balance;
     }
 
     boolean login(String acc_no, int pin)

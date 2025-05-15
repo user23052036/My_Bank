@@ -1,4 +1,4 @@
-import java.util.Scanner;
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,19 +31,26 @@ class AccountNotFoundException extends Exception
 
 class Transaction 
 {
+    Account account;
     PreparedStatement s_pst,r_pst;
     ResultSet result;
     Connection con;
-    Scanner sc;
+    BufferedReader sb;
 
-    Transaction(Connection con, Scanner sc)  //constructor
+    Transaction(Connection con, BufferedReader sb)  //constructor
     {
         this.con = con;
-        this.sc = sc;
+        this.sb = sb;
     }
 
     //-------------------------------------------------------------------------------------------------------
     
+    void validate_sender(String acc_no, double amount) throws MinimumBalanceException
+    {
+        double balance = account.getBalance(acc_no);
+        if(balance-amount<0) throw new MinimumBalanceException();
+    }
+
     void validate_receiver(String acc_no) throws AccountNotFoundException
     {
         String query = "SELECT * FROM Account WHERE acc_no = ?";
@@ -109,6 +116,7 @@ class Transaction
 
             System.out.println("Enter amount to send: ");
             double s_amount = sc.nextDouble();
+            validate_sender(acc_no,s_amount);
 
             
             s_pst.setDouble(1,s_amount);
